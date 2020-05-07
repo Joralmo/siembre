@@ -29,7 +29,8 @@ const Profile = () => {
 
                 <div className="lower-container">
                     <div>
-                        <h3>{user.nickname}</h3>
+                        <h3>{user.name}</h3>
+                        <h2>{user.nickname}</h2>
                         <h4>Make it better</h4>
                     </div>
                     <div>
