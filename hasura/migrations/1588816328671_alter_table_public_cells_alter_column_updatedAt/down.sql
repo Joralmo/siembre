@@ -1,0 +1,1 @@
+ALTER TABLE ONLY "public"."cells" ALTER COLUMN "updatedAt" DROP DEFAULT;

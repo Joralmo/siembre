@@ -1,0 +1,116 @@
+- table:
+    schema: public
+    name: cells
+  object_relationships:
+  - name: tray
+    using:
+      foreign_key_constraint_on: tray_id
+- table:
+    schema: public
+    name: trays
+  object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  array_relationships:
+  - name: cells
+    using:
+      foreign_key_constraint_on:
+        column: tray_id
+        table:
+          schema: public
+          name: cells
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        user_id:
+          _eq: X-Hasura-User-Id
+      columns:
+      - id
+      - user_id
+      - createdAt
+      - updatedAt
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - user_id
+      - createdAt
+      - updatedAt
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - user_id
+      - createdAt
+      - updatedAt
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        user_id:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: public
+    name: users
+  array_relationships:
+  - name: trays
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          schema: public
+          name: trays
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        auth0_id:
+          _eq: X-Hasura-User-Id
+      columns:
+      - id
+      - auth0_id
+      - name
+      - createdAt
+      - updatedAt
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - auth0_id
+      - createdAt
+      - updatedAt
+      - name
+      filter: {}
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - id
+      - auth0_id
+      - createdAt
+      - updatedAt
+      - name
+      filter:
+        auth0_id:
+          _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        auth0_id:
+          _eq: X-Hasura-User-Id

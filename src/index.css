@@ -1,0 +1,90 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+button{
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}
+
+.card-container{
+	width: 300px;
+	height: 430px;
+	background: #FFF;
+	border-radius: 6px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+	box-shadow: 0px 1px 10px 1px #000;
+	overflow: hidden;
+	display: inline-block;
+}
+.upper-container{
+	height: 150px;
+	background: tomato;
+}
+.image-container{
+	background: white;
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	padding: 5px;
+	transform: translate(100px,100px);
+}
+.image-container img{
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+}
+.lower-container{
+	height: 280px;
+	background: #FFF;
+	padding: 20px;
+	padding-top: 40px;
+	text-align: center;
+}
+.lower-container h3, h4{
+	box-sizing: border-box;
+	line-height: .6;
+	font-weight: lighter;
+}
+.lower-container h4{
+	color: tomato;
+	opacity: .6;
+	font-weight: bold;
+}
+.lower-container p{
+	font-size: 16px;
+	color: gray;
+	margin-bottom: 30px;
+}
+.lower-container .btn{
+	padding: 12px 20px;
+	background: tomato;
+	border: none;
+	color: white;
+	border-radius: 30px;
+	font-size: 12px;
+	text-decoration: none;
+	font-weight: bold;
+	transition: all .3s ease-in;
+}
+.lower-container .btn:hover{
+	background: transparent;
+	color: tomato;
+	border: 2px solid tomato;
+}

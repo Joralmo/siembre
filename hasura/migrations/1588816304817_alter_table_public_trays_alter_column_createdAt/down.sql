@@ -1,0 +1,1 @@
+ALTER TABLE ONLY "public"."trays" ALTER COLUMN "createdAt" DROP DEFAULT;
