@@ -5,6 +5,66 @@
   - name: tray
     using:
       foreign_key_constraint_on: tray_id
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        tray:
+          user_id:
+            _eq: X-Hasura-User-Id
+      columns:
+      - id
+      - tray_id
+      - posX
+      - posY
+      - name
+      - description
+      - germinated
+      - createdAt
+      - updatedAt
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - germinated
+      - id
+      - posX
+      - posY
+      - tray_id
+      - createdAt
+      - updatedAt
+      - description
+      - name
+      filter:
+        tray:
+          user_id:
+            _eq: X-Hasura-User-Id
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - germinated
+      - id
+      - posX
+      - posY
+      - tray_id
+      - createdAt
+      - updatedAt
+      - description
+      - name
+      filter:
+        tray:
+          user_id:
+            _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: user
+    permission:
+      filter:
+        tray:
+          user_id:
+            _eq: X-Hasura-User-Id
 - table:
     schema: public
     name: trays
@@ -91,9 +151,11 @@
       columns:
       - id
       - auth0_id
+      - name
       - createdAt
       - updatedAt
-      - name
+      - email
+      - avatar
       filter: {}
   update_permissions:
   - role: user
