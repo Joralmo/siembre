@@ -16,6 +16,8 @@ import {
     Spinner,
     CloseButton,
 } from '@chakra-ui/core';
+import Home from './components/Home';
+import Dashboard from './components/Dashboard';
 
 const getURLParameters = (url) =>
     (url.match(/([^?=&]+)(=([^&]*))/g) || []).reduce(
@@ -26,8 +28,14 @@ const getURLParameters = (url) =>
     );
 
 function App() {
-    const { loading } = useAuth0();
-    const { error_description } = getURLParameters(window.location.href);
+    const { loading, getIdTokenClaims, user } = useAuth0();
+    if (user)
+        if (!localStorage.getItem('siembreAppToken')) {
+            getIdTokenClaims().then(({ __raw: token }) => {
+                localStorage.setItem('siembreAppToken', token);
+            });
+        }
+    let { error_description } = getURLParameters(window.location.href);
     if (loading) {
         return (
             <div
@@ -59,14 +67,17 @@ function App() {
                             position="absolute"
                             right="8px"
                             top="8px"
+                            onClick={() => (window.location.href = '/')}
                         />
                     </Alert>
                 )}
+                <Switch>
+                    <Route path="/" component={Home} exact />
+                    <Route path="/home" component={Home} />
+                    <PrivateRoute path="/profile" component={Profile} />
+                    <PrivateRoute path="/dashboard" component={Dashboard} />
+                </Switch>
             </ThemeProvider>
-            <Switch>
-                <Route path="/" exact />
-                <PrivateRoute path="/profile" component={Profile} />
-            </Switch>
         </Router>
     );
 }
