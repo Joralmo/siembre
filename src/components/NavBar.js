@@ -93,11 +93,7 @@ export default class NavBar extends Component {
                     ) : (
                         <Button
                             bg="transparent"
-                            onClick={() =>
-                                loginWithRedirect({
-                                    redirect_uri: window.location.href + 'callback',
-                                })
-                            }
+                            onClick={() => loginWithRedirect({})}
                             border="1px"
                         >
                             Iniciar sesión
