@@ -91,7 +91,6 @@ export default class CrearBandeja extends Component {
                 verifyError(errors, this.context.loginWithRedirect);
                 return;
             }
-            alert("re")
             const {
                 insert_trays: { returning },
             } = data;
