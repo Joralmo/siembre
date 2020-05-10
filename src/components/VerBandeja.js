@@ -3,8 +3,11 @@ import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/core';
 import Bandeja from './Bandeja';
 import { GET_TRAY_BY_ID } from '../graphQuerys';
 import makeQuery from '../apollo/apollo';
+import verifyError from '../utils/verifyError';
+import { Auth0Context } from '../react-auth0-spa';
 
 export default class VerBandeja extends Component {
+    static contextType = Auth0Context;
     constructor(props) {
         super(props);
 
@@ -22,7 +25,10 @@ export default class VerBandeja extends Component {
             variables: { trayId: this.props.match.params.tray_id },
         };
         const { data, errors } = await makeQuery(operation);
-        if (errors) alert('Error obteniendo la bandeja');
+        if (errors) {
+            verifyError(errors, this.context.loginWithRedirect);
+            return;
+        }
         const { trays_by_pk } = data;
         this.setState({ tray: trays_by_pk, mostrarBandeja: true });
     }
@@ -46,10 +52,13 @@ export default class VerBandeja extends Component {
                     textAlign: 'center',
                 }}
             >
-                <Box mt="30px" mb="20px">
-                    Las macetas sin color aún no le has dado un nombre, pulsa
-                    alguna para darle un nombre
-                </Box>
+                {tray && (
+                    <Box mt="30px" mb="20px">
+                        Las macetas sin color aún no le has dado un nombre,
+                        pulsa alguna para darle un nombre, estás viendo [
+                        {tray.name}]
+                    </Box>
+                )}
                 <Box
                     className="containerBandeja"
                     w="100%"
@@ -60,6 +69,7 @@ export default class VerBandeja extends Component {
                 >
                     {this.state.mostrarBandeja && (
                         <Bandeja
+                            parent="ver"
                             cells={tray.cells}
                             boxHeight={height}
                             boxWidth={width}
