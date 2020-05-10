@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/core';
 import Home from './components/Home';
 import Dashboard from './components/Dashboard';
+import GuardarToken from './components/GuardarToken';
 
 const getURLParameters = (url) =>
     (url.match(/([^?=&]+)(=([^&]*))/g) || []).reduce(
@@ -55,7 +56,7 @@ function App() {
     return (
         <Router history={history}>
             <ThemeProvider>
-                <NavBar />
+                {window.location.pathname !== '/callback' && <NavBar />}
                 {error_description && (
                     <Alert status="error">
                         <AlertIcon />
@@ -73,6 +74,7 @@ function App() {
                 )}
                 <Switch>
                     <Route path="/" component={Home} exact />
+                    <Route path="/callback" component={GuardarToken} />
                     <Route path="/home" component={Home} />
                     <PrivateRoute path="/profile" component={Profile} />
                     <PrivateRoute path="/dashboard" component={Dashboard} />
