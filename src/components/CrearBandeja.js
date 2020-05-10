@@ -7,12 +7,18 @@ import {
     Grid,
     Box,
     Text,
+    Input,
+    Spinner,
+    Image,
 } from '@chakra-ui/core';
 import Bandeja from './Bandeja';
 import { Auth0Context } from '../react-auth0-spa';
 import { NEW_TRAY, NEW_CELLS } from '../graphQuerys';
 import makeQuery from '../apollo/apollo';
-// import { execute, makePromise } from 'apollo-link';
+import verifyError from '../utils/verifyError';
+import moment from 'moment';
+import 'moment/locale/es';
+import ImageSvg from '../assets/undraw_air_support_wy1q.svg';
 
 const Options = () => {
     return new Array(10).fill(0).map((e, i) => (
@@ -25,11 +31,14 @@ const Options = () => {
 export default class CrearBandeja extends Component {
     static contextType = Auth0Context;
     constructor() {
+        moment.locale('es');
         super();
         this.state = {
             rows: 0,
             columns: 0,
+            nombre: 'Mi bandeja',
             mostrarBandeja: false,
+            loading: false,
         };
     }
 
@@ -52,16 +61,20 @@ export default class CrearBandeja extends Component {
     };
 
     preview = async () => {
-        const { mostrarBandeja, rows, columns } = this.state;
+        const { mostrarBandeja, rows, columns, nombre } = this.state;
         if (rows && columns) {
             if (!mostrarBandeja) {
                 this.setState({ mostrarBandeja: true });
                 return;
             }
 
+            this.setState({ loading: true });
             const { user } = this.context;
             const { rows, columns } = this.state;
             const cells = [];
+
+            console.log(moment().format());
+            console.log(moment().unix());
 
             let operation = {
                 query: NEW_TRAY,
@@ -69,19 +82,22 @@ export default class CrearBandeja extends Component {
                     userId: user.sub,
                     rows,
                     columns,
+                    nombre,
+                    createdAt: moment().format(),
                 },
             };
-
-            let {
-                data: {
-                    insert_trays: { returning },
-                },
-                errors,
-            } = await makeQuery(operation);
-            if (errors) alert('Error al guardar la bandeja');
+            let { data, errors } = await makeQuery(operation);
+            if (errors) {
+                verifyError(errors, this.context.loginWithRedirect);
+                return;
+            }
+            alert("re")
+            const {
+                insert_trays: { returning },
+            } = data;
             const { id: tray_id } = returning[0];
-            new Array(rows).fill(0).map((e, i) => {
-                new Array(columns).fill(0).map((e, j) => {
+            new Array(parseInt(rows)).fill(0).map((e, i) => {
+                new Array(parseInt(columns)).fill(0).map((e, j) => {
                     cells.push({
                         posX: i,
                         posY: j,
@@ -96,14 +112,30 @@ export default class CrearBandeja extends Component {
                     cells,
                 },
             };
-            let data;
             ({ data, errors } = await makeQuery(operation));
-            if (errors) alert('Error al guardar las celdas');
+            if (errors) {
+                verifyError(errors, this.context.loginWithRedirect);
+                return;
+            }
             window.location.href = '/dashboard/trays/' + tray_id;
         }
     };
 
     render() {
+        if (this.state.loading) {
+            return (
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100vh',
+                    }}
+                >
+                    <Spinner size="xl" color="white" />
+                </div>
+            );
+        }
         const containerBandeja = window.document.getElementsByClassName(
             'containerBandeja'
         )[0];
@@ -121,18 +153,35 @@ export default class CrearBandeja extends Component {
                     textAlign: 'center',
                 }}
             >
-                <Box w="90%" h="20%" ml="5%">
+                <Box w="90%" h="10%" ml="5%">
                     <FormControl marginTop="10px">
-                        <Grid templateColumns="repeat(3, 1fr)" gap={6}>
+                        <Grid templateColumns="repeat(4, 1fr)" gap={6}>
+                            <Box w="100%" h="10">
+                                <FormLabel htmlFor="name">Nombre</FormLabel>
+                                <Input
+                                    defaultValue={this.state.nombre}
+                                    type="text"
+                                    id="nombre"
+                                    w="80%"
+                                    h="90%"
+                                    aria-describedby="nombre-helper-text"
+                                    onChange={({ target: { value: nombre } }) =>
+                                        this.setState({ nombre })
+                                    }
+                                />
+                            </Box>
                             <Box w="100%" h="10">
                                 <FormLabel htmlFor="rows">Filas</FormLabel>
                                 <Select
+                                    w="80%"
                                     defaultValue={this.state.rows}
                                     onChange={({ target: { value: rows } }) =>
                                         this.setState({ rows })
                                     }
-                                    placeholder="Filas"
                                 >
+                                    <option disabled value="0">
+                                        0
+                                    </option>
                                     <Options />
                                 </Select>
                             </Box>
@@ -141,12 +190,15 @@ export default class CrearBandeja extends Component {
                                     Columnas
                                 </FormLabel>
                                 <Select
+                                    w="80%"
                                     defaultValue={this.state.columns}
                                     onChange={({
                                         target: { value: columns },
                                     }) => this.setState({ columns })}
-                                    placeholder="Columnas"
                                 >
+                                    <option disabled value="0">
+                                        0
+                                    </option>
                                     <Options />
                                 </Select>
                             </Box>
@@ -171,40 +223,62 @@ export default class CrearBandeja extends Component {
                     maxH="75%"
                     padding="10px"
                     boxSizing="border-box"
+                    display={this.state.mostrarBandeja ? "block" : "flex"}
+                    alignItems="center"
+                    justifyContent="center"
                 >
                     {this.state.mostrarBandeja && (
                         <Bandeja
+                            parent="crear"
                             boxHeight={height}
                             boxWidth={width}
                             rows={parseInt(this.state.rows)}
                             columns={parseInt(this.state.columns)}
                         />
                     )}
-                </Box>
-                <Box mt="50px">
-                    {this.state.mostrarBandeja && (
-                        <Text fontSize="xs">
-                            Iconos diseñados por{' '}
-                            <a
-                                style={linkStyle}
-                                href="https://www.flaticon.es/autores/freepik"
-                                title="Freepik"
-                                target="blank"
-                            >
-                                Freepik
-                            </a>{' '}
-                            from{' '}
-                            <a
-                                style={linkStyle}
-                                href="https://www.flaticon.es/"
-                                title="Flaticon"
-                                target="blank"
-                            >
-                                {' '}
-                                www.flaticon.es
-                            </a>
-                        </Text>
+                    {!this.state.mostrarBandeja && (
+                        <Image
+                            src={ImageSvg}
+                            w="40%"
+                            alt="esperando"
+                        />
                     )}
+                </Box>
+                <Box>
+                    <Text
+                        fontSize="xs"
+                        position="absolute"
+                        bottom="0"
+                        left="50%"
+                    >
+                        Iconos diseñados por{' '}
+                        <a
+                            style={linkStyle}
+                            href="https://www.flaticon.es/autores/freepik"
+                            title="Freepik"
+                            target="blank"
+                        >
+                            Freepik
+                        </a>{' '}
+                        from{' '}
+                        <a
+                            style={linkStyle}
+                            href="https://www.flaticon.es/"
+                            title="Flaticon"
+                            target="blank"
+                        >
+                            {' '}
+                            www.flaticon.es
+                        </a>
+                        ; Imagen tomada de{' '}
+                        <a
+                            style={linkStyle}
+                            href="https://undraw.co/"
+                            target="blank"
+                        >
+                            undraw
+                        </a>
+                    </Text>
                 </Box>
             </div>
         );

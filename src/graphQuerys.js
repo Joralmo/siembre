@@ -8,9 +8,15 @@ const GET_EMAILS = gql`
 `;
 
 const NEW_TRAY = gql`
-    mutation($userId: String!, $rows: Int!, $columns: Int!) {
+    mutation($userId: String!, $rows: Int!, $columns: Int!, $nombre: String!, $createdAt: timestamp) {
         insert_trays(
-            objects: { user_id: $userId, rows: $rows, columns: $columns }
+            objects: {
+                user_id: $userId
+                rows: $rows
+                columns: $columns
+                name: $nombre,
+                createdAt: $createdAt
+            }
             on_conflict: { constraint: trays_pkey, update_columns: createdAt }
         ) {
             returning {
@@ -34,9 +40,10 @@ const NEW_CELLS = gql`
 const GET_TRAY_BY_ID = gql`
     query getTrayById($trayId: Int!) {
         trays_by_pk(id: $trayId) {
+            name
             rows
             columns
-            cells(order_by: {posX: asc, posY: asc}){
+            cells(order_by: { posX: asc, posY: asc }) {
                 id
                 posX
                 posY
@@ -57,4 +64,23 @@ const UPDATE_CELL = gql`
     }
 `;
 
-export { GET_EMAILS, NEW_TRAY, NEW_CELLS, GET_TRAY_BY_ID, UPDATE_CELL };
+const GET_TRAYS = gql`
+    query getTrays {
+        trays(order_by: { createdAt: desc }) {
+            createdAt
+            id
+            name
+            rows
+            columns
+        }
+    }
+`;
+
+export {
+    GET_EMAILS,
+    NEW_TRAY,
+    NEW_CELLS,
+    GET_TRAY_BY_ID,
+    UPDATE_CELL,
+    GET_TRAYS,
+};
