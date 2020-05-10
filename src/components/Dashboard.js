@@ -4,6 +4,7 @@ import { Link, Switch } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
 import CrearBandeja from './CrearBandeja';
 import VerBandeja from './VerBandeja';
+import VerBandejas from './VerBandejas';
 
 export default class Dashboard extends Component {
     constructor() {
@@ -35,7 +36,7 @@ export default class Dashboard extends Component {
                         <Box>
                             <NavLink
                                 style={{ marginRight: '10px' }}
-                                to="/dashboard/trays/create"
+                                to="/dashboard/trays"
                             >
                                 <Button bg="transparent" border="1px">
                                     Mis bandejas
@@ -71,6 +72,14 @@ export default class Dashboard extends Component {
                         <PrivateRoute
                             path="/dashboard/trays/:tray_id"
                             component={VerBandeja}
+                        />
+                        <PrivateRoute
+                            path="/dashboard/trays/"
+                            component={VerBandejas}
+                        />
+                        <PrivateRoute
+                            path="/dashboard/"
+                            component={VerBandejas}
                         />
                     </Switch>
                 </Flex>
