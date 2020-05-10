@@ -16,13 +16,49 @@ import {
     FormLabel,
     Input,
     FormHelperText,
+    Tooltip,
+    Textarea,
 } from '@chakra-ui/core';
 import PlantaSvg from '../assets/planta.svg';
 import PlantaGrisSvg from '../assets/naturaleza.svg';
 import { UPDATE_CELL } from '../graphQuerys';
 import makeQuery from '../apollo/apollo';
+import _ from 'lodash';
+import verifyError from '../utils/verifyError';
+import { Auth0Context } from '../react-auth0-spa';
+
+const Cell = ({ children, ...props }) => {
+    const { cell, imagen, parent, fn } = { ...props };
+    if (cell.description) {
+        return (
+            <Tooltip
+                hasArrow={false}
+                label={cell.description}
+                placement="top"
+                bg="black"
+            >
+                <Image
+                    src={imagen}
+                    h={parent === 'crear' ? '100%' : '85%'}
+                    w="100%"
+                    onClick={() => fn(cell)}
+                />
+            </Tooltip>
+        );
+    } else {
+        return (
+            <Image
+                src={imagen}
+                h={parent === 'crear' ? '100%' : '85%'}
+                w="100%"
+                onClick={() => fn(cell)}
+            />
+        );
+    }
+};
 
 export default class Bandeja extends Component {
+    static contextType = Auth0Context;
     constructor(props) {
         super(props);
 
@@ -51,40 +87,44 @@ export default class Bandeja extends Component {
     }
 
     setCell = (cellActual) => {
-        console.log(cellActual);
-        this.setState({ cellActual, isOpen: true });
+        if (cellActual !== false)
+            this.setState({
+                cellActual,
+                isOpen: true,
+                name: cellActual.name,
+                description: cellActual.description,
+            });
     };
 
     saveCell = async () => {
         const { cellActual, name, description } = this.state;
-        cellActual.name = name;
-        cellActual.description = description;
-        cellActual.updatedAt = new Date().toUTCString();
-        console.log({ ...cellActual });
         const operation = {
             query: UPDATE_CELL,
             variables: {
                 id: cellActual.id,
                 cell: {
-                    name: cellActual.name,
-                    description: cellActual.description,
+                    name: name,
+                    description: description,
                     updatedAt: cellActual.updatedAt,
                 },
             },
         };
         const { data, errors } = await makeQuery(operation);
-        if (errors) alert('Error actualizando la celda');
-        console.log(data, errors);
+        if (errors) {
+            verifyError(errors, this.context.loginWithRedirect);
+            return;
+        };
+        cellActual.name = name;
+        cellActual.description = description;
         this.setState({ isOpen: false });
     };
 
     render() {
-        const { rows, columns } = this.state;
-        let { boxWidth, boxHeight, cells } = this.props;
+        const { rows, columns, cellActual } = this.state;
+        let { boxWidth, boxHeight, cells, parent } = this.props;
         let imagen;
         boxHeight = boxHeight / rows;
         boxWidth = boxWidth / columns - boxWidth * 0.02;
-
         return (
             <Fragment>
                 {new Array(rows).fill(0).map((e, i) => (
@@ -95,8 +135,13 @@ export default class Bandeja extends Component {
                         mb="5px"
                     >
                         {new Array(columns).fill(0).map((e, j) => {
-                            const cell = cells[parseInt(`${i}${j}`)];
-                            imagen = cell.name ? PlantaSvg : PlantaGrisSvg;
+                            let cell = _.filter(cells, { posX: i, posY: j })[0];
+                            if (parent === 'ver') {
+                                imagen = cell.name ? PlantaSvg : PlantaGrisSvg;
+                            } else {
+                                cell = false;
+                                imagen = PlantaSvg;
+                            }
                             return (
                                 <Box
                                     className="celda"
@@ -110,12 +155,27 @@ export default class Bandeja extends Component {
                                     cursor="pointer"
                                     display="block"
                                 >
-                                    <Image
-                                        src={imagen}
-                                        htmlWidth="80%"
-                                        onClick={() => this.setCell(cell)}
-                                    />
-                                    {cell.name && (
+                                    {!cell && (
+                                        <Image
+                                            src={imagen}
+                                            h={
+                                                parent === 'crear'
+                                                    ? '100%'
+                                                    : '85%'
+                                            }
+                                            w="100%"
+                                            onClick={() => this.setCell(cell)}
+                                        />
+                                    )}
+                                    {cell && (
+                                        <Cell
+                                            cell={cell}
+                                            imagen={imagen}
+                                            parent={parent}
+                                            fn={this.setCell}
+                                        />
+                                    )}
+                                    {cell && cell.name && (
                                         <Text
                                             m="0"
                                             p="0"
@@ -142,6 +202,7 @@ export default class Bandeja extends Component {
                             <FormControl>
                                 <FormLabel htmlFor="name">Nombre</FormLabel>
                                 <Input
+                                    defaultValue={cellActual.name}
                                     w="90%"
                                     type="text"
                                     id="name"
@@ -156,7 +217,8 @@ export default class Bandeja extends Component {
                                 <FormLabel htmlFor="description">
                                     Descripción
                                 </FormLabel>
-                                <Input
+                                <Textarea
+                                    defaultValue={cellActual.description}
                                     w="90%"
                                     type="text"
                                     id="description"
