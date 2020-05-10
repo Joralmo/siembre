@@ -53,7 +53,7 @@ export default class VerBandejas extends Component {
                     </Heading>
                     <Divider orientation="vertical" />
                     <Text margin="auto">
-                        Creada {moment(e.createdAt, 'YYYYMMDD').fromNow()}
+                        Creada {moment(e.createdAt).fromNow()}
                     </Text>
                     <NavLink
                         style={{ margin: 'auto' }}
