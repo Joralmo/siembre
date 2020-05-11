@@ -73,9 +73,6 @@ export default class CrearBandeja extends Component {
             const { rows, columns } = this.state;
             const cells = [];
 
-            console.log(moment().format());
-            console.log(moment().unix());
-
             let operation = {
                 query: NEW_TRAY,
                 variables: {
