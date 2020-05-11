@@ -18,21 +18,25 @@ import {
     FormHelperText,
     Tooltip,
     Textarea,
+    Select,
 } from '@chakra-ui/core';
 import PlantaSvg from '../assets/planta.svg';
 import PlantaGrisSvg from '../assets/naturaleza.svg';
-import { UPDATE_CELL } from '../graphQuerys';
+import { UPDATE_CELL, GET_PLANTS } from '../graphQuerys';
 import makeQuery from '../apollo/apollo';
 import _ from 'lodash';
 import verifyError from '../utils/verifyError';
 import { Auth0Context } from '../react-auth0-spa';
+import { Link } from 'react-router-dom';
+import moment from 'moment';
+import 'moment/locale/es';
 
 const Cell = ({ children, ...props }) => {
     const { cell, imagen, parent, fn } = { ...props };
     if (cell.description) {
         return (
             <Tooltip
-                hasArrow={false}
+                hasArrow
                 label={cell.description}
                 placement="top"
                 bg="black"
@@ -57,9 +61,19 @@ const Cell = ({ children, ...props }) => {
     }
 };
 
+const Plants = ({ ...props }) => {
+    const { plants } = { ...props };
+    return plants.map((e) => (
+        <option key={e.id} value={e.id}>
+            {e.name}
+        </option>
+    ));
+};
+
 export default class Bandeja extends Component {
     static contextType = Auth0Context;
     constructor(props) {
+        moment.locale('es');
         super(props);
 
         this.state = {
@@ -67,8 +81,10 @@ export default class Bandeja extends Component {
             columns: props.columns,
             cellActual: {},
             isOpen: false,
+            plant_id: 0,
             name: null,
             description: null,
+            plants: [],
         };
     }
 
@@ -80,10 +96,16 @@ export default class Bandeja extends Component {
         }
     }
 
-    componentDidMount() {
-        // console.log(this.props);
-        // const boxWidth = window.document.getElementsByClassName('celda')[0];
-        // this.setState({ height: boxWidth.offsetWidth });
+    async componentDidMount() {
+        const operation = {
+            query: GET_PLANTS,
+        };
+        const { data, errors } = await makeQuery(operation);
+        if (errors) {
+            verifyError(errors, this.context.loginWithRedirect);
+            return;
+        }
+        this.setState({ plants: data.plant });
     }
 
     setCell = (cellActual) => {
@@ -91,36 +113,39 @@ export default class Bandeja extends Component {
             this.setState({
                 cellActual,
                 isOpen: true,
-                name: cellActual.name,
+                plant_id: cellActual.plant_id,
                 description: cellActual.description,
             });
     };
 
     saveCell = async () => {
-        const { cellActual, name, description } = this.state;
-        const operation = {
-            query: UPDATE_CELL,
-            variables: {
-                id: cellActual.id,
-                cell: {
-                    name: name,
-                    description: description,
-                    updatedAt: cellActual.updatedAt,
+        const { cellActual, plant_id, description, name } = this.state;
+        if (plant_id !== 0) {
+            const operation = {
+                query: UPDATE_CELL,
+                variables: {
+                    id: cellActual.id,
+                    cell: {
+                        plant_id,
+                        description,
+                        updatedAt: moment().format(),
+                    },
                 },
-            },
-        };
-        const { data, errors } = await makeQuery(operation);
-        if (errors) {
-            verifyError(errors, this.context.loginWithRedirect);
-            return;
-        };
-        cellActual.name = name;
-        cellActual.description = description;
-        this.setState({ isOpen: false });
+            };
+            const { errors } = await makeQuery(operation);
+            if (errors) {
+                verifyError(errors, this.context.loginWithRedirect);
+                return;
+            }
+            cellActual.plant_id = plant_id;
+            if (name) cellActual.plant = { name };
+            cellActual.description = description;
+            this.setState({ isOpen: false, plant_id: null, name: null });
+        }
     };
 
     render() {
-        const { rows, columns, cellActual } = this.state;
+        const { rows, columns, cellActual, plants, plant_id } = this.state;
         let { boxWidth, boxHeight, cells, parent } = this.props;
         let imagen;
         boxHeight = boxHeight / rows;
@@ -137,23 +162,25 @@ export default class Bandeja extends Component {
                         {new Array(columns).fill(0).map((e, j) => {
                             let cell = _.filter(cells, { posX: i, posY: j })[0];
                             if (parent === 'ver') {
-                                imagen = cell.name ? PlantaSvg : PlantaGrisSvg;
+                                imagen = cell.plant ? PlantaSvg : PlantaGrisSvg;
                             } else {
                                 cell = false;
                                 imagen = PlantaSvg;
                             }
                             return (
                                 <Box
+                                    overflow="hidden"
                                     className="celda"
                                     key={`${i}${j}`}
                                     w={`${boxWidth}px`}
                                     h={`${boxHeight}px`}
                                     bg="blue.500"
                                     backgroundColor="transparent"
-                                    display="flex"
+                                    display={
+                                        parent === 'ver' ? 'block' : 'flex'
+                                    }
                                     justifyContent="center"
                                     cursor="pointer"
-                                    display="block"
                                 >
                                     {!cell && (
                                         <Image
@@ -175,15 +202,27 @@ export default class Bandeja extends Component {
                                             fn={this.setCell}
                                         />
                                     )}
-                                    {cell && cell.name && (
-                                        <Text
-                                            m="0"
-                                            p="0"
-                                            color="white"
-                                            fontWeight="bold"
+                                    {cell && cell.plant && (
+                                        <Tooltip
+                                            hasArrow
+                                            label={cell.plant.name}
+                                            placement="bottom"
+                                            bg="black"
                                         >
-                                            {cell.name}
-                                        </Text>
+                                            <Text
+                                                overflow="hidden"
+                                                width="100%"
+                                                whiteSpace="nowrap"
+                                                textOverflow="ellipsis"
+                                                m="0"
+                                                p="0"
+                                                color="white"
+                                                fontWeight="bold"
+                                                mt="-5px"
+                                            >
+                                                {cell.plant.name}
+                                            </Text>
+                                        </Tooltip>
                                     )}
                                 </Box>
                             );
@@ -199,18 +238,37 @@ export default class Bandeja extends Component {
                         <ModalHeader>Nombre de la planta</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody>
+                            {!plants.length && (
+                                <Text color="black">
+                                    Parece que no tienes plantas creadas,{' '}
+                                    <Link
+                                        to="/dashboard/plants/create"
+                                        style={{ color: 'tomato' }}
+                                    >
+                                        Crea algunas aquí
+                                    </Link>
+                                </Text>
+                            )}
                             <FormControl>
                                 <FormLabel htmlFor="name">Nombre</FormLabel>
-                                <Input
-                                    defaultValue={cellActual.name}
-                                    w="90%"
-                                    type="text"
-                                    id="name"
-                                    aria-describedby="name-helper-text"
-                                    onChange={({ target: { value: name } }) =>
-                                        this.setState({ name })
-                                    }
-                                />
+                                <Select
+                                    onChange={(e) => {
+                                        this.setState({
+                                            plant_id: e.target.value,
+                                            name:
+                                                e.target.options[
+                                                    e.target.options
+                                                        .selectedIndex
+                                                ].text,
+                                        });
+                                    }}
+                                    defaultValue={plant_id}
+                                >
+                                    <option value="0">
+                                        Nombre de la planta
+                                    </option>
+                                    <Plants plants={plants} />
+                                </Select>
                                 <FormHelperText id="name-helper-text">
                                     Nombre de tu planta
                                 </FormHelperText>
@@ -245,6 +303,7 @@ export default class Bandeja extends Component {
                                 onClick={this.saveCell}
                                 color="white"
                                 backgroundColor="tomato"
+                                isDisabled={!plant_id}
                             >
                                 Guardar
                             </Button>
