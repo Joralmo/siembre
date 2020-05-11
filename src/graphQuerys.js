@@ -8,13 +8,19 @@ const GET_EMAILS = gql`
 `;
 
 const NEW_TRAY = gql`
-    mutation($userId: String!, $rows: Int!, $columns: Int!, $nombre: String!, $createdAt: timestamp) {
+    mutation(
+        $userId: String!
+        $rows: Int!
+        $columns: Int!
+        $nombre: String!
+        $createdAt: timestamp
+    ) {
         insert_trays(
             objects: {
                 user_id: $userId
                 rows: $rows
                 columns: $columns
-                name: $nombre,
+                name: $nombre
                 createdAt: $createdAt
             }
             on_conflict: { constraint: trays_pkey, update_columns: createdAt }
@@ -47,10 +53,13 @@ const GET_TRAY_BY_ID = gql`
                 id
                 posX
                 posY
-                name
                 description
                 createdAt
                 updatedAt
+                plant_id
+                plant {
+                    name
+                }
             }
         }
     }
@@ -76,6 +85,30 @@ const GET_TRAYS = gql`
     }
 `;
 
+const NEW_PLANT = gql`
+    mutation($plant: [plant_insert_input!]!) {
+        insert_plant(
+            objects: $plant
+            on_conflict: {
+                constraint: plant_name_key
+                update_columns: createdAt
+            }
+        ) {
+            affected_rows
+        }
+    }
+`;
+
+const GET_PLANTS = gql`
+    query getPlants {
+        plant {
+            id
+            name
+        }
+    }
+  
+`;
+
 export {
     GET_EMAILS,
     NEW_TRAY,
@@ -83,4 +116,6 @@ export {
     GET_TRAY_BY_ID,
     UPDATE_CELL,
     GET_TRAYS,
+    NEW_PLANT,
+    GET_PLANTS
 };

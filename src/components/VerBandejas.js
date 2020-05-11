@@ -115,9 +115,7 @@ export default class VerBandejas extends Component {
                     {this.state.show && (
                         <Text
                             fontSize="xs"
-                            position="absolute"
                             bottom="0"
-                            left="50%"
                         >
                             Iconos diseñados por{' '}
                             <a

@@ -52,7 +52,7 @@ export default class Home extends Component {
                     height: `calc(100vh - ${this.state.height}px)`,
                     justifyContent: 'center',
                     alignItems: 'center',
-                    backgroundColor: '#1a202c'
+                    backgroundColor: '#1a202c',
                 }}
             >
                 <Stack
@@ -72,10 +72,15 @@ export default class Home extends Component {
                         <Heading fontSize="xl">
                             Administra tus bandejas de germinación
                         </Heading>
-                        <Image src={FarmSvg} htmlWidth="50%" padding="2%" />
+                        <Image
+                            margin="auto"
+                            src={FarmSvg}
+                            htmlWidth="50%"
+                            padding="2%"
+                        />
                         <Text></Text>
                         <Auth />
-                        <Text fontSize="xs">
+                        <Text fontSize="xs" mt="10px">
                             Imagen tomada de{' '}
                             <a href="https://undraw.co/" target="blank">
                                 undraw

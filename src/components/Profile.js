@@ -32,7 +32,7 @@ export default class Profile extends Component {
                             <p>{user.email}</p>
                         </div>
                         <div>
-                            <a href="#" className="btn">
+                            <a href="/#" className="btn">
                                 Actualizar datos
                             </a>
                         </div>
