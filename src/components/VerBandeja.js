@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Box, Flex, SimpleGrid, Text } from '@chakra-ui/core';
+import { Box, Text } from '@chakra-ui/core';
 import Bandeja from './Bandeja';
 import { GET_TRAY_BY_ID } from '../graphQuerys';
 import makeQuery from '../apollo/apollo';
@@ -55,8 +55,11 @@ export default class VerBandeja extends Component {
                 {tray && (
                     <Box mt="30px" mb="20px">
                         Las macetas sin color aún no le has dado un nombre,
-                        pulsa alguna para darle un nombre, estás viendo [
-                        {tray.name}]
+                        pulsa alguna para darle un nombre, desliza el cursor por
+                        el nombre para ver el nombre completo en caso de que
+                        salga acortado y desliza el cursor por la imagen para
+                        ver la descripción en caso de tener alguna, estás viendo
+                        [{tray.name}]
                     </Box>
                 )}
                 <Box
