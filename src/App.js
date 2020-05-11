@@ -15,6 +15,7 @@ import {
     ThemeProvider,
     Spinner,
     CloseButton,
+    CSSReset,
 } from '@chakra-ui/core';
 import Home from './components/Home';
 import Dashboard from './components/Dashboard';
@@ -55,7 +56,8 @@ function App() {
     return (
         <Router history={history}>
             <ThemeProvider>
-                {window.location.pathname !== '/callback' && <NavBar />}
+                <CSSReset />
+                <NavBar />
                 {error_description && (
                     <Alert status="error">
                         <AlertIcon />
